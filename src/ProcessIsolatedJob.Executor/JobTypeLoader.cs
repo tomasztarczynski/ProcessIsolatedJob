@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using McMaster.NETCore.Plugins;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
-using System.Reflection;
 
 namespace ProcessIsolatedJob.Executor
 {
@@ -19,10 +19,21 @@ namespace ProcessIsolatedJob.Executor
 
         public Type Load()
         {
-            var jobAssembly = Assembly.LoadFrom(_options.JobAssemblyPath);
+            var pluginLoader = PluginLoader.CreateFromAssemblyFile(
+                    _options.JobAssemblyPath,
+                    sharedTypes: new[]
+                    {
+                        typeof(IProcessIsolatedJob),
+                        typeof(ILogger),
+                        typeof(IConfiguration)
+                    });
 
-            var jobTypes = jobAssembly.DefinedTypes
-                .Where(type => typeof(IProcessIsolatedJob).IsAssignableFrom(type))
+            var jobAssembly = pluginLoader.LoadDefaultAssembly();
+
+            var jobTypes = jobAssembly.GetTypes()
+                .Where(type => typeof(IProcessIsolatedJob).IsAssignableFrom(type)
+                    && !type.IsAbstract
+                    && type.IsClass)
                 .ToList();
 
             if (jobTypes.Count != 1)
@@ -32,14 +43,14 @@ namespace ProcessIsolatedJob.Executor
 
             var jobType = jobTypes.Single();
 
-            if (jobType.DeclaredConstructors.Count() != 1)
+            if (jobType.GetConstructors().Count() != 1)
             {
                 throw new InvalidOperationException("Type has too many constructors");
             }
 
             if (jobType.GetConstructor(new[] { typeof(ILogger), typeof(IConfiguration) }) == null)
             {
-                throw new InvalidOperationException("Type missing empty constructor");
+                throw new InvalidOperationException($"Type missing {typeof(ILogger).Name}, {typeof(ILogger).Name} constructor");
             }
 
             return jobType;
