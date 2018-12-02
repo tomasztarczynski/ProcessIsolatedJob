@@ -53,6 +53,8 @@ namespace ProcessIsolatedJob.Executor
                 .AddSingleton(GetJobTypeLoaderOptions(configuration))
                 .AddSingleton(GetJobConfigurationReaderOptions(configuration))
                 .AddTransient<JobTypeLoader>()
+                .AddTransient<JobConfigurationReader>()
+                .AddTransient<JobActivator>()
                 .AddTransient<JobExecutor>()
                 .BuildServiceProvider();
         }
