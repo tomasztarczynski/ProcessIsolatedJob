@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -36,7 +37,7 @@ namespace ProcessIsolatedJob.Executor
                 throw new InvalidOperationException("Type has too many constructors");
             }
 
-            if (jobType.GetConstructor(Type.EmptyTypes) == null)
+            if (jobType.GetConstructor(new[] { typeof(ILogger), typeof(IConfiguration) }) == null)
             {
                 throw new InvalidOperationException("Type missing empty constructor");
             }

@@ -30,9 +30,17 @@ namespace ProcessIsolatedJob.Executor
                 throw;
             }
 
-            var jobExecutor = serviceProvider.GetRequiredService<JobExecutor>();
-            await jobExecutor.ExecuteAsync();
-            Console.ReadKey();
+            try
+            {
+                var jobExecutor = serviceProvider.GetRequiredService<JobExecutor>();
+                await jobExecutor.ExecuteAsync();
+                Console.ReadKey();
+            }
+            catch (Exception ex)
+            {
+                logger.LogCritical(ex, "Exception has occured during job execution");
+                throw;
+            }
         }
 
         private static IConfiguration BuildConfiguration(string[] args)

@@ -16,7 +16,18 @@ namespace ProcessIsolatedJob.Executor
 
         public IConfiguration Read()
         {
-            return null;
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile(_options.JobJsonConfigurationPath)
+                .Build();
+
+            if (string.IsNullOrEmpty(_options.JobConfigurationSectionKey))
+            {
+                return configuration;
+            }
+            else
+            {
+                return configuration.GetSection(_options.JobConfigurationSectionKey);
+            }
         }
     }
 }

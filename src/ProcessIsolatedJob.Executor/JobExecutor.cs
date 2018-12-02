@@ -27,7 +27,7 @@ namespace ProcessIsolatedJob.Executor
             var jobType = _jobTypeLoader.Load();
             var jobConfiguration = _jobConfigurationReader.Read();
             var job = _jobActivator.CreateInstance(jobType, jobConfiguration);
-            await job?.ExecuteAsync();
+            await job.ExecuteAsync();
         }
     }
 }
