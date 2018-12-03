@@ -18,15 +18,21 @@ namespace ProcessIsolatedJob.Executor
 
             try
             {
+                if (args == null || args.Length == 0)
+                {
+                    throw new ArgumentException("Value cannot be null or empty", nameof(args));
+                }
+
                 var stopwatch = Stopwatch.StartNew();
                 configuration = BuildConfiguration(args);
                 serviceProvider = BuildServiceProvider(configuration);
                 logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-                logger.LogTrace("Executor has initialized successfully in {InitTimeInMs} milliseconds", stopwatch.ElapsedMilliseconds);
+                logger.LogTrace("Executor has been initialized successfully in {ElapsedMs} milliseconds", stopwatch.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {
-                NLog.LogManager.GetCurrentClassLogger().Log(NLog.LogLevel.Fatal, ex, "Executor initialization has failed");
+                NLog.LogManager.GetCurrentClassLogger()
+                    .Log(NLog.LogLevel.Fatal, ex, "Critical error has occurred during executor initialization");
                 throw;
             }
 
@@ -38,7 +44,7 @@ namespace ProcessIsolatedJob.Executor
             }
             catch (Exception ex)
             {
-                logger.LogCritical(ex, "Exception has occured during job execution");
+                logger.LogCritical(ex, "Critical error has occurred during job execution");
                 throw;
             }
         }

@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace ProcessIsolatedJob.Executor
@@ -16,10 +18,10 @@ namespace ProcessIsolatedJob.Executor
             JobConfigurationReader jobConfigurationReader,
             JobActivator jobActivator)
         {
-            _logger = logger;
-            _jobTypeLoader = jobTypeLoader;
-            _jobConfigurationReader = jobConfigurationReader;
-            _jobActivator = jobActivator;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _jobTypeLoader = jobTypeLoader ?? throw new ArgumentNullException(nameof(jobTypeLoader));
+            _jobConfigurationReader = jobConfigurationReader ?? throw new ArgumentNullException(nameof(jobConfigurationReader));
+            _jobActivator = jobActivator ?? throw new ArgumentNullException(nameof(jobActivator));
         }
 
         public async Task ExecuteAsync()
@@ -27,7 +29,25 @@ namespace ProcessIsolatedJob.Executor
             var jobType = _jobTypeLoader.Load();
             var jobConfiguration = _jobConfigurationReader.Read();
             var job = _jobActivator.CreateInstance(jobType, jobConfiguration);
-            await job.ExecuteAsync();
+
+            try
+            {
+                _logger.LogInformation("Executing {JobTypeName} job...", jobType.Name);
+
+                var stopwatch = Stopwatch.StartNew();
+
+                await job.ExecuteAsync();
+
+                _logger.LogInformation(
+                    "{JobTypeName} job has executed successfully in {ElapsedMs} milliseconds",
+                    jobType.Name,
+                    stopwatch.ElapsedMilliseconds);
+            }
+            catch
+            {
+                _logger.LogError("{JobTypeName} job execution has failed", jobType.Name);
+                throw;
+            }
         }
     }
 }

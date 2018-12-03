@@ -1,4 +1,6 @@
-﻿namespace ProcessIsolatedJob.Executor
+﻿using System;
+
+namespace ProcessIsolatedJob.Executor
 {
     internal class JobConfigurationReaderOptions
     {
@@ -6,8 +8,14 @@
             string jobJsonConfigurationPath,
             string jobConfigurationSectionKey)
         {
-            JobJsonConfigurationPath = jobJsonConfigurationPath;
-            JobConfigurationSectionKey = jobConfigurationSectionKey;
+            if (string.IsNullOrWhiteSpace(jobJsonConfigurationPath))
+            {
+                throw new ArgumentException("Value cannot be null or empty", nameof(jobJsonConfigurationPath));
+            }
+
+            JobJsonConfigurationPath = jobJsonConfigurationPath.Trim();
+            JobConfigurationSectionKey = string.IsNullOrWhiteSpace(jobConfigurationSectionKey)
+                ? null : jobConfigurationSectionKey.Trim();
         }
 
         public string JobJsonConfigurationPath { get; }

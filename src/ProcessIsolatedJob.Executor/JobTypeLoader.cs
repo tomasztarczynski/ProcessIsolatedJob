@@ -1,7 +1,7 @@
-﻿using McMaster.NETCore.Plugins;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ProcessIsolatedJob.Executor
@@ -13,13 +13,19 @@ namespace ProcessIsolatedJob.Executor
 
         public JobTypeLoader(ILogger<JobTypeLoader> logger, JobTypeLoaderOptions options)
         {
-            _logger = logger;
-            _options = options;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         public Type Load()
         {
-            var pluginLoader = PluginLoader.CreateFromAssemblyFile(
+            try
+            {
+                _logger.LogInformation("Loading job type from {JobAssemblyPath}...", _options.JobAssemblyPath);
+
+                var stopwatch = Stopwatch.StartNew();
+
+                var pluginLoader = McMaster.NETCore.Plugins.PluginLoader.CreateFromAssemblyFile(
                     _options.JobAssemblyPath,
                     sharedTypes: new[]
                     {
@@ -28,32 +34,45 @@ namespace ProcessIsolatedJob.Executor
                         typeof(IConfiguration)
                     });
 
-            var jobAssembly = pluginLoader.LoadDefaultAssembly();
+                var jobTypeAssembly = pluginLoader.LoadDefaultAssembly();
 
-            var jobTypes = jobAssembly.GetTypes()
-                .Where(type => typeof(IProcessIsolatedJob).IsAssignableFrom(type)
-                    && !type.IsAbstract
-                    && type.IsClass)
-                .ToList();
+                var jobTypes = jobTypeAssembly.GetTypes()
+                    .Where(type => typeof(IProcessIsolatedJob).IsAssignableFrom(type)
+                        && !type.IsAbstract
+                        && type.IsClass)
+                    .ToList();
 
-            if (jobTypes.Count != 1)
-            {
-                throw new InvalidOperationException("Assembly don't have any job");
+                if (jobTypes.Count != 1)
+                {
+                    throw new InvalidOperationException(
+                        $"{_options.JobAssemblyPath} should contains exactly one job type that is not abstract class which implements {typeof(IProcessIsolatedJob).Name} interface");
+                }
+
+                var jobType = jobTypes.Single();
+
+                if (jobType.GetConstructors().Count() != 1)
+                {
+                    throw new InvalidOperationException("Job type should have exactly one constructor");
+                }
+
+                if (jobType.GetConstructor(new[] { typeof(ILogger), typeof(IConfiguration) }) == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Job type should have ({typeof(ILogger).Name}, {typeof(IConfiguration).Name}) constructor");
+                }
+
+                _logger.LogInformation(
+                    "{JobTypeName} job type has been loaded successfully in {ElapsedMs} milliseconds",
+                    jobType.Name,
+                    stopwatch.ElapsedMilliseconds);
+
+                return jobType;
             }
-
-            var jobType = jobTypes.Single();
-
-            if (jobType.GetConstructors().Count() != 1)
+            catch
             {
-                throw new InvalidOperationException("Type has too many constructors");
+                _logger.LogError("Job type loading has failed");
+                throw;
             }
-
-            if (jobType.GetConstructor(new[] { typeof(ILogger), typeof(IConfiguration) }) == null)
-            {
-                throw new InvalidOperationException($"Type missing {typeof(ILogger).Name}, {typeof(ILogger).Name} constructor");
-            }
-
-            return jobType;
         }
     }
 }

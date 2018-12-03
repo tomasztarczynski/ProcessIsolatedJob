@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 namespace ProcessIsolatedJob.Executor
 {
@@ -10,23 +11,45 @@ namespace ProcessIsolatedJob.Executor
 
         public JobConfigurationReader(ILogger<JobConfigurationReader> logger, JobConfigurationReaderOptions options)
         {
-            _logger = logger;
-            _options = options;
+            _logger = logger ?? throw new System.ArgumentNullException(nameof(logger));
+            _options = options ?? throw new System.ArgumentNullException(nameof(options));
         }
 
         public IConfiguration Read()
         {
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile(_options.JobJsonConfigurationPath)
-                .Build();
+            try
+            {
+                _logger.LogInformation("Reading job configuration from {JobJsonConfigurationPath}...", _options.JobJsonConfigurationPath);
 
-            if (string.IsNullOrEmpty(_options.JobConfigurationSectionKey))
-            {
-                return configuration;
+                var stopwatch = Stopwatch.StartNew();
+
+                var configuration = new ConfigurationBuilder()
+                    .AddJsonFile(_options.JobJsonConfigurationPath)
+                    .Build();
+
+                if (_options.JobConfigurationSectionKey == null)
+                {
+                    _logger.LogInformation(
+                        "Job configuration has been read successfully in {ElapsedMs} milliseconds", stopwatch.ElapsedMilliseconds);
+
+                    return configuration;
+                }
+                else
+                {
+                    var configurationSection = configuration.GetSection(_options.JobConfigurationSectionKey);
+
+                    _logger.LogInformation(
+                        "{JobConfigurationSectionKey} job configuration section has been read successfully in {ElapsedMs} milliseconds",
+                        _options.JobConfigurationSectionKey,
+                        stopwatch.ElapsedMilliseconds);
+
+                    return configurationSection;
+                }
             }
-            else
+            catch
             {
-                return configuration.GetSection(_options.JobConfigurationSectionKey);
+                _logger.LogError("Job configuration reading has failed");
+                throw;
             }
         }
     }
