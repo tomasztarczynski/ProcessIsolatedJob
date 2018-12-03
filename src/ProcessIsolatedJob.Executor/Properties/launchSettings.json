@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ProcessIsolatedJob.Executor - .NET Core": {
+      "commandName": "Project",
+      "commandLineArgs": "JobAssemblyPath=\".\\..\\..\\..\\..\\ProcessIsolatedJob.ExampleJob\\bin\\Debug\\netcoreapp2.1\\ProcessIsolatedJob.ExampleJob.dll\" JobJsonConfigurationPath=\".\\..\\..\\..\\..\\ProcessIsolatedJob.ExampleJob\\bin\\Debug\\netcoreapp2.1\\appsettings.json\" JobConfigurationSectionKey="
+    }
+  }
+}

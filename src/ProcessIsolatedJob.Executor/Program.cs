@@ -27,7 +27,9 @@ namespace ProcessIsolatedJob.Executor
                 configuration = BuildConfiguration(args);
                 serviceProvider = BuildServiceProvider(configuration);
                 logger = serviceProvider.GetRequiredService<ILogger<Program>>();
-                logger.LogTrace("Executor has been initialized successfully in {ElapsedMs} milliseconds", stopwatch.ElapsedMilliseconds);
+                logger.LogInformation(
+                    "Executor has been initialized successfully in {ElapsedMs} milliseconds",
+                    stopwatch.ElapsedMilliseconds);
             }
             catch (Exception ex)
             {

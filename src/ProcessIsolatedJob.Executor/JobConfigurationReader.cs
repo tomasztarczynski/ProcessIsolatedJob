@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.IO;
 
 namespace ProcessIsolatedJob.Executor
 {
@@ -24,7 +25,7 @@ namespace ProcessIsolatedJob.Executor
                 var stopwatch = Stopwatch.StartNew();
 
                 var configuration = new ConfigurationBuilder()
-                    .AddJsonFile(_options.JobJsonConfigurationPath)
+                    .AddJsonFile(ToFullPath(_options.JobJsonConfigurationPath))
                     .Build();
 
                 if (_options.JobConfigurationSectionKey == null)
@@ -51,6 +52,12 @@ namespace ProcessIsolatedJob.Executor
                 _logger.LogError("Job configuration reading has failed");
                 throw;
             }
+        }
+
+        private string ToFullPath(string path)
+        {
+            var fileInfo = new FileInfo(path);
+            return fileInfo.FullName;
         }
     }
 }

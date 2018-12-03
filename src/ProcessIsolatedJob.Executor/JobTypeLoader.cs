@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace ProcessIsolatedJob.Executor
@@ -26,7 +27,7 @@ namespace ProcessIsolatedJob.Executor
                 var stopwatch = Stopwatch.StartNew();
 
                 var pluginLoader = McMaster.NETCore.Plugins.PluginLoader.CreateFromAssemblyFile(
-                    _options.JobAssemblyPath,
+                    ToFullPath(_options.JobAssemblyPath),
                     sharedTypes: new[]
                     {
                         typeof(IProcessIsolatedJob),
@@ -73,6 +74,12 @@ namespace ProcessIsolatedJob.Executor
                 _logger.LogError("Job type loading has failed");
                 throw;
             }
+        }
+
+        private string ToFullPath(string path)
+        {
+            var fileInfo = new FileInfo(path);
+            return fileInfo.FullName;
         }
     }
 }
