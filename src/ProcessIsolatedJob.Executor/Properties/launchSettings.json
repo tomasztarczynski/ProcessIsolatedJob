@@ -3,6 +3,10 @@
     "ProcessIsolatedJob.Executor - .NET Core": {
       "commandName": "Project",
       "commandLineArgs": "JobAssemblyPath=\".\\..\\..\\..\\..\\ProcessIsolatedJob.ExampleJob\\bin\\Debug\\netcoreapp2.1\\ProcessIsolatedJob.ExampleJob.dll\" JobJsonConfigurationPath=\".\\..\\..\\..\\..\\ProcessIsolatedJob.ExampleJob\\bin\\Debug\\netcoreapp2.1\\appsettings.json\" JobConfigurationSectionKey="
+    },
+    "ProcessIsolatedJob.Executor - .NET Framework": {
+      "commandName": "Project",
+      "commandLineArgs": "JobAssemblyPath=\".\\..\\..\\..\\..\\ProcessIsolatedJob.ExampleJob\\bin\\Debug\\net47\\ProcessIsolatedJob.ExampleJob.dll\" JobJsonConfigurationPath=\".\\..\\..\\..\\..\\ProcessIsolatedJob.ExampleJob\\bin\\Debug\\net47\\appsettings.json\" JobConfigurationSectionKey="
     }
   }
 }

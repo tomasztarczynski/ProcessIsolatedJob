@@ -25,7 +25,7 @@ namespace ProcessIsolatedJob.Executor
                 _logger.LogInformation("Loading job type from {JobAssemblyPath}...", _options.JobAssemblyPath);
 
                 var stopwatch = Stopwatch.StartNew();
-
+#if NETCOREAPP2_1
                 var pluginLoader = McMaster.NETCore.Plugins.PluginLoader.CreateFromAssemblyFile(
                     ToFullPath(_options.JobAssemblyPath),
                     sharedTypes: new[]
@@ -36,6 +36,9 @@ namespace ProcessIsolatedJob.Executor
                     });
 
                 var jobTypeAssembly = pluginLoader.LoadDefaultAssembly();
+#else
+                var jobTypeAssembly = System.Reflection.Assembly.LoadFrom(ToFullPath(_options.JobAssemblyPath));
+#endif
 
                 var jobTypes = jobTypeAssembly.GetTypes()
                     .Where(type => typeof(IProcessIsolatedJob).IsAssignableFrom(type)

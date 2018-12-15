@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using RestSharp;
 
 namespace ProcessIsolatedJob.ExampleJob
 {
@@ -18,6 +19,11 @@ namespace ProcessIsolatedJob.ExampleJob
         public Task ExecuteAsync()
         {
             _logger.LogInformation(_configuration["Message"]);
+
+            var request = new RestRequest("json/utc/now", dataFormat: DataFormat.Json);
+            var client = new RestClient("http://worldclockapi.com/api");
+            var response = client.Execute(request);
+            _logger.LogInformation(response.Content);
             return Task.CompletedTask;
         }
     }
