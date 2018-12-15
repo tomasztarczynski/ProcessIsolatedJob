@@ -32,20 +32,20 @@ namespace ProcessIsolatedJob.Executor
 
             try
             {
-                _logger.LogInformation("Executing {JobTypeName} job...", jobType.Name);
+                _logger.LogInformation("Executing {JobTypeFullName} job...", jobType.FullName);
 
                 var stopwatch = Stopwatch.StartNew();
 
                 await job.ExecuteAsync();
 
                 _logger.LogInformation(
-                    "{JobTypeName} job has executed successfully in {ElapsedMs} milliseconds",
-                    jobType.Name,
+                    "{JobTypeFullName} job has executed successfully in {ElapsedMs} milliseconds",
+                    jobType.FullName,
                     stopwatch.ElapsedMilliseconds);
             }
             catch
             {
-                _logger.LogError("{JobTypeName} job execution has failed", jobType.Name);
+                _logger.LogError("{JobTypeFullName} job execution has failed", jobType.FullName);
                 throw;
             }
         }

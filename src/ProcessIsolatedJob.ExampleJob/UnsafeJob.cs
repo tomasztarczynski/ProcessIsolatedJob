@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using RestSharp;
+using System;
 
 namespace ProcessIsolatedJob.ExampleJob
 {
@@ -22,8 +23,8 @@ namespace ProcessIsolatedJob.ExampleJob
 
             var request = new RestRequest("json/utc/now", dataFormat: DataFormat.Json);
             var client = new RestClient("http://worldclockapi.com/api");
-            var response = client.Execute(request);
-            _logger.LogInformation(response.Content);
+            var response = client.Execute<dynamic>(request);
+            _logger.LogInformation($"Current UTC time: {{0}}", (string)response.Data["currentDateTime"]);
             return Task.CompletedTask;
         }
     }

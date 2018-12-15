@@ -49,7 +49,7 @@ namespace ProcessIsolatedJob.Executor
                 if (jobTypes.Count != 1)
                 {
                     throw new InvalidOperationException(
-                        $"{_options.JobAssemblyPath} should contains exactly one job type that is not abstract class which implements {typeof(IProcessIsolatedJob).Name} interface");
+                        $"{_options.JobAssemblyPath} should contains exactly one job type that is not abstract class which implements {typeof(IProcessIsolatedJob).FullName} interface");
                 }
 
                 var jobType = jobTypes.Single();
@@ -61,13 +61,25 @@ namespace ProcessIsolatedJob.Executor
 
                 if (jobType.GetConstructor(new[] { typeof(ILogger), typeof(IConfiguration) }) == null)
                 {
-                    throw new InvalidOperationException(
-                        $"Job type should have ({typeof(ILogger).Name}, {typeof(IConfiguration).Name}) constructor");
+                    var constructor = jobType.GetConstructors()[0];
+                    var parameters = constructor.GetParameters();
+
+                    if (parameters.Any(p => p.ParameterType.FullName == typeof(ILogger).FullName)
+                        && parameters.Any(p => p.ParameterType.FullName == typeof(IConfiguration).FullName))
+                    {
+                        throw new InvalidOperationException(
+                            $"Job type should have correct assembly versions for {typeof(ILogger).FullName} and {typeof(IConfiguration).FullName} types");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(
+                            $"Job type should have ({typeof(ILogger).FullName}, {typeof(IConfiguration).FullName}) constructor");
+                    }
                 }
 
                 _logger.LogInformation(
-                    "{JobTypeName} job type has been loaded successfully in {ElapsedMs} milliseconds",
-                    jobType.Name,
+                    "{JobTypeFullName} job type has been loaded successfully in {ElapsedMs} milliseconds",
+                    jobType.FullName,
                     stopwatch.ElapsedMilliseconds);
 
                 return jobType;

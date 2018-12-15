@@ -20,7 +20,7 @@ namespace ProcessIsolatedJob.Executor
         {
             try
             {
-                _logger.LogInformation("Creating {JobTypeName} job instance...", jobType.Name);
+                _logger.LogInformation("Creating {JobTypeFullName} job instance...", jobType.FullName);
 
                 var stopwatch = Stopwatch.StartNew();
 
@@ -30,15 +30,15 @@ namespace ProcessIsolatedJob.Executor
                     jobConfiguration);
 
                 _logger.LogInformation(
-                    "{JobTypeName} job instance has been created successfully in {ElapsedMs} milliseconds",
-                    jobType.Name,
+                    "{JobTypeFullName} job instance has been created successfully in {ElapsedMs} milliseconds",
+                    jobType.FullName,
                     stopwatch.ElapsedMilliseconds);
 
                 return jobInstance;
             }
             catch
             {
-                _logger.LogInformation("{JobTypeName} job instance creation has failed", jobType.Name);
+                _logger.LogInformation("{JobTypeFullName} job instance creation has failed", jobType.FullName);
                 throw;
             }
         }
